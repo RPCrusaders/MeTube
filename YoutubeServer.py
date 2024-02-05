@@ -7,6 +7,7 @@ channel = connection.channel()
 
 def main():
     channel.exchange_declare(exchange="content", exchange_type="direct")
+    channel.exchange_declare(exchange="server_info", exchange_type="fanout")
     youtuber = "natsu"
     result = channel.queue_declare(queue='', exclusive=True)
     queue_name = result.method.queue
@@ -20,13 +21,14 @@ def main():
     def callback(ch, method, properties, body):
         print(f"[x] Received {body}")
     
+    channel.basic_consume(
+        queue=queue_name,
+        on_message_callback=callback,
+        auto_ack=True
+    )
+    
     print("Waiting for messages")
-    while True:
-        channel.basic_consume(
-            queue=queue_name,
-            on_message_callback=callback,
-            auto_ack=True
-        )
+    channel.start_consuming()
 
 
 
