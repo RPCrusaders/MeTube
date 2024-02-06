@@ -13,8 +13,8 @@ def main():
 
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
-    channel.exchange_declare(exchange="content", exchange_type="direct")
-    channel.exchange_declare(exchange="server_info", exchange_type="fanout")
+    channel.exchange_declare(exchange="content", exchange_type="direct", durable=True)
+    channel.exchange_declare(exchange="server_info", exchange_type="fanout", durable=True)
 
     youtuber = "".join(sys.argv[1])
     video_name = " ".join(sys.argv[2:])
@@ -33,7 +33,7 @@ def main():
     print(f"[x] Sent {youtuber}:{video_name}")
 
     print("SUCCESS")
-
+    connection.close()
 
 # if __name__ == "main":
 main()

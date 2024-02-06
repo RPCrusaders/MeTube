@@ -17,7 +17,7 @@ def _consume_user_requests(ch, method, properties, body):
     # print(body)
 
 def main():
-    channel.exchange_declare(exchange="content", exchange_type="direct")
+    channel.exchange_declare(exchange="content", exchange_type="direct", durable=True)
     channel.exchange_declare(exchange="server_info", exchange_type="fanout")
     result = channel.queue_declare(queue="", exclusive=True)
 
