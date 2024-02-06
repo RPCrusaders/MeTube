@@ -1,33 +1,33 @@
 import pika
 import sys
+import json
+
 
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
+def _consume_youtuber_requests(ch, method, properties, body):
+    body = json.loads(body)
+    print(f"{body['youtuber']} uploaded {body['video_name']}")
+    # print(body)
+
+def _consume_user_requests(ch, method, properties, body):
+    body = json.loads(body)
+    print(f"{body['user']} subscribed {body['youtuber']}")
+    # print(body)
 
 def main():
     channel.exchange_declare(exchange="content", exchange_type="direct")
     channel.exchange_declare(exchange="server_info", exchange_type="fanout")
-    youtuber = "natsu"
-    result = channel.queue_declare(queue='', exclusive=True)
-    queue_name = result.method.queue
-    print(f"Queue Name: {queue_name}, Youtuber: {youtuber}")
-    channel.queue_bind(
-        exchange="content",
-        queue=queue_name,
-        routing_key=youtuber
-    )
+    result = channel.queue_declare(queue="", exclusive=True)
 
-    def callback(ch, method, properties, body):
-        print(f"[x] Received {body}")
-    
-    channel.basic_consume(
-        queue=queue_name,
-        on_message_callback=callback,
-        auto_ack=True
-    )
-    
-    print("Waiting for messages")
+    # binding the queue to the exchange
+    channel.queue_bind(exchange="server_info", queue=result.method.queue)
+
+    queue_name = result.method.queue
+    print(f"Queue Name: {queue_name}")
+    channel.basic_consume(queue=queue_name, on_message_callback=_consume_youtuber_requests, auto_ack=True)
+    print(" [*] Waiting for youtuber requests. To exit press CTRL+C")
     channel.start_consuming()
 
 
