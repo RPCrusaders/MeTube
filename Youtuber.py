@@ -28,7 +28,7 @@ def main():
         exchange="server_info",
         routing_key="info",
         body=json.dumps({"youtuber": youtuber, "video_name": video_name, "status": "uploaded"}),
-        properties=pika.BasicProperties(delivery_mode=2) # make message persistent
+        properties=pika.BasicProperties(delivery_mode=2), # make message persistent
     )
     print(f"[x] Sent {youtuber}:{video_name}")
 
