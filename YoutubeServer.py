@@ -11,9 +11,21 @@ youtubers = set()
 users = set()
 users_subscribed = {}
 
+def notify_users(body):
+    youtuber = body['youtuber']
+    video_name = body['video_name']
+    channel.basic_publish(
+        exchange="content",
+        routing_key=youtuber,
+        body= json.dumps({"youtuber": youtuber, "video_name": video_name}),
+        properties=pika.BasicProperties(delivery_mode=2) # make message persistent
+    )
+    
+
 def _consume_youtuber_requests(ch, method, properties, body):
     body = json.loads(body)
     youtubers.add(body['youtuber'])
+    notify_users(body)
     print(f"{body['youtuber']} uploaded {body['video_name']}")
     # print(body)
 
@@ -33,11 +45,11 @@ def _consume_user_requests(ch, method, properties, body):
             channel.queue_bind(exchange="content", queue=body['user'], routing_key=body['youtuber'])
             users_subscribed.get(body['user'], set()).add(body['youtuber'])
         else:
+            channel.queue_unbind(exchange="content", queue=body['user'], routing_key=body['youtuber'])
             if body['youtuber'] not in users_subscribed.get(body['user'], set()):
                 print(f"{body['user']} tried to unsubscribe from {body['youtuber']} but was not subscribed")
                 return
             print(f"{body['user']} unsubscribed {body['youtuber']}")
-            channel.queue_unbind(exchange="content", queue=body['user'], routing_key=body['youtuber'])
             users_subscribed.get(body['user'], set()).remove(body['youtuber'])
     else:
         print(f"{body['user']} tried to subscribe to {body['youtuber']} but {body['youtuber']} does not exist")
