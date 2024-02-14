@@ -11,7 +11,9 @@ def main():
         return 
     
 
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='34.16.198.68', port='5672',
+                                                                   credentials= pika.credentials.PlainCredentials('a','a')
+                                                                   ))
     channel = connection.channel()
     channel.exchange_declare(exchange="content", exchange_type="direct", durable=True)
     channel.exchange_declare(exchange="server_info", exchange_type="fanout", durable=True)

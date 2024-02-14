@@ -3,7 +3,8 @@ import sys
 import json
 
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'
+                                    ))
 channel = connection.channel()
 
 youtubers = set()
